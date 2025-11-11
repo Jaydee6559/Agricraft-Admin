@@ -1,5 +1,7 @@
 // Place <script type="module" src="./protect.js"></script> near the end of every protected page.
-import { onAuthChanged, currentUserIsAdmin, signOutUser } from './auth.js';
+import { onAuthChanged, signOutUser } from './auth.js';
+
+const ADMIN_EMAIL = 'admin@gmail.com';
 
 onAuthChanged(async (user) => {
   if (!user) {
@@ -7,15 +9,13 @@ onAuthChanged(async (user) => {
     return;
   }
 
-  const isAdmin = await currentUserIsAdmin(user);
-  if (!isAdmin) {
-    alert('You are not authorized to access the admin panel.');
+  if (user.email !== ADMIN_EMAIL) {
+    alert('Not authorized — signing out.');
     await signOutUser();
     window.location.href = 'index.html';
     return;
   }
 
-  // inject sign-out button into topbar if present
   const topbar = document.querySelector('.topbar');
   if (topbar && !document.getElementById('signout-btn')) {
     const btn = document.createElement('button');
@@ -30,5 +30,3 @@ onAuthChanged(async (user) => {
     topbar.appendChild(btn);
   }
 });
-
-<script type="module" src="./protect.js"></script>

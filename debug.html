@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Firestore Debug — AgriCraft Admin</title>
+  <link rel="stylesheet" href="app.css">
+  <style>
+    .box{background:#fff;border:1px solid #eee;padding:12px;border-radius:8px;margin:12px 0}
+    pre{white-space:pre-wrap;word-break:break-word;max-height:360px;overflow:auto}
+    .controls{display:flex;gap:8px;align-items:center;margin-top:8px}
+    .small-btn{padding:6px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer}
+  </style>
+</head>
+<body>
+  <script type="module" src="./protect.js"></script>
+
+  <div class="app" style="padding:28px">
+    <div class="container" style="min-width:760px">
+      <div class="topbar">
+        <div><div class="title">Firestore Debug</div><div class="welcome">View collections as text</div></div>
+      </div>
+
+      <div class="panel">
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button id="btn-refresh" class="btn">Refresh All</button>
+        </div>
+
+        <div id="collections"></div>
+        <div class="footer-note">Only reads are performed; no downloads required.</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { getAllDocs } from './firebase.js';
+
+    const collectionsToShow = ['users','validIds','shops','products']; // edit as needed
+    const wrap = document.getElementById('collections');
+    const refreshBtn = document.getElementById('btn-refresh');
+
+    function makeSection(name, jsonStr) {
+      const div = document.createElement('div');
+      div.className = 'box';
+      div.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>${name}</strong>
+          <div class="controls">
+            <button data-which="${name}" class="small-btn copy">Copy</button>
+            <button data-which="${name}" class="small-btn refresh">Refresh</button>
+          </div>
+        </div>
+        <pre id="pre-${name}">${jsonStr}</pre>
+      `;
+      return div;
+    }
+
+    async function loadCollection(name) {
+      const pre = document.getElementById(`pre-${name}`);
+      if (pre) pre.textContent = 'Loading…';
+      try {
+        const docs = await getAllDocs(name);
+        const json = JSON.stringify(docs, null, 2);
+        if (pre) pre.textContent = json;
+        else wrap.appendChild(makeSection(name, json));
+      } catch (err) {
+        if (pre) pre.textContent = 'Error: ' + err.message;
+        else wrap.appendChild(makeSection(name, 'Error: ' + err.message));
+      }
+    }
+
+    async function refreshAll() {
+      wrap.innerHTML = '';
+      for (const c of collectionsToShow) {
+        wrap.appendChild(makeSection(c, 'Loading…'));
+      }
+      await Promise.all(collectionsToShow.map(loadCollection));
+      attachButtons();
+    }
+
+    function attachButtons() {
+      wrap.querySelectorAll('.copy').forEach(btn => {
+        btn.onclick = () => {
+          const name = btn.dataset.which;
+          const pre = document.getElementById(`pre-${name}`);
+          navigator.clipboard.writeText(pre.textContent).then(() => {
+            btn.textContent = 'Copied';
+            setTimeout(()=> btn.textContent = 'Copy', 1200);
+          });
+        };
+      });
+      wrap.querySelectorAll('.refresh').forEach(btn => {
+        btn.onclick = async () => {
+          const name = btn.dataset.which;
+          const pre = document.getElementById(`pre-${name}`);
+          pre.textContent = 'Loading…';
+          await loadCollection(name);
+        };
+      });
+    }
+
+    refreshBtn.addEventListener('click', refreshAll);
+    // initial load
+    refreshAll();
+  </script>
+</body>
+</html>
