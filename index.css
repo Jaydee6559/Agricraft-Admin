@@ -86,7 +86,7 @@ body {
   transform: translateY(-1px);
 }
 
-/* Responsive */
+
 @media (max-width: 600px) {
   .title {
     font-size: 2.4rem;

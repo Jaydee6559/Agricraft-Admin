@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Product Validation - AgriCraft Admin</title>
+  <title>Shop Validation (User) - AgriCraft Admin</title>
   <link rel="stylesheet" href="app.css">
 </head>
 <body>
@@ -24,36 +24,21 @@
     <main class="container">
       <div class="topbar">
         <div>
-          <div class="title">Product Validation</div>
-          <div class="welcome">Pending <span id="pending-products" class="stat-number">0</span></div>
+          <div class="title">Shop Validation (User)</div>
+          <div class="welcome">Approve pending shops from users</div>
         </div>
-        <div class="kv">AgriCraft Market</div>
+        <button id="refresh-shops" class="btn">Refresh</button>
       </div>
 
-      <section class="panel">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Id</th>
-              <th>Shop Name</th>
-              <th>Product Name</th>
-              <th>Description</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="products-tbody">
-            <!-- injected -->
-          </tbody>
-        </table>
-
-        <div style="display:flex;justify-content:center;margin-top:16px">
-          <button id="refresh-products" class="btn">Refresh</button>
+      <section class="content-grid">
+        <div class="panel">
+          <strong>Pending Shops</strong>
+          <div id="list" style="margin-top:12px"></div>
         </div>
       </section>
     </main>
   </div>
 
-  <script type="module" src="./products-fetch.js"></script>
+  <script type="module" src="./shops-fetch.js"></script>
 </body>
 </html>

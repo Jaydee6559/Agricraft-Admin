@@ -4,27 +4,31 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AgriCraft Market Admin - Login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Kumbh+Sans:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="index.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Kumbh+Sans:wght@700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./index.css" />
+  <style>
+    
+    #error { display:none;color:#c33;margin-top:10px;font-weight:700 }
+  </style>
 </head>
 <body>
   <div class="login-container">
     <h1 class="title">AgriCraft Market Admin</h1>
 
-    <form class="login-form" action="#" method="post">
+    <form class="login-form" action="" method="post" novalidate>
       <p class="subtitle">Login to your Account</p>
 
       <div class="input-group">
-        <input type="email" id="email" placeholder="Username (email)" required />
+      
+        <input type="text" id="email" placeholder="Username or email" autocomplete="username" required />
       </div>
 
       <div class="input-group">
-        <input type="password" id="password" placeholder="Password" required />
+        <input type="password" id="password" placeholder="Password" autocomplete="current-password" required />
       </div>
 
       <button type="submit" class="login-btn">Login</button>
-
-      <div id="error" role="alert" style="display:none;color:#c33;margin-top:10px;font-weight:700"></div>
+      <div id="error" role="alert"></div>
     </form>
   </div>
 
@@ -36,36 +40,40 @@
     const passEl = document.getElementById('password');
     const errorEl = document.getElementById('error');
 
+    function showError(msg) {
+      errorEl.textContent = msg || 'Login failed';
+      errorEl.style.display = 'block';
+    }
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorEl.style.display = 'none';
+      errorEl.textContent = '';
+
+      const usernameOrEmail = emailEl.value.trim();
+      const password = passEl.value;
+
+      if (!usernameOrEmail || !password) {
+        showError('Enter username and password');
+        return;
+      }
+
       try {
-        await signIn(emailEl.value.trim(), passEl.value);
-        // successful sign in will be validated on protected pages,
-        // redirect to home which is protected by protect.js
-        window.location.href = 'home.html';
+        await signIn(usernameOrEmail, password);
+        location.href = 'home.html';
       } catch (err) {
-        console.error(err);
-        errorEl.textContent = 'Sign in failed. Check credentials.';
-        errorEl.style.display = 'block';
-        setTimeout(() => { errorEl.style.display = 'none'; }, 4000);
+        const code = err?.code || '';
+        const map = {
+          'auth/user-not-found': 'Account not found. Create admin@local.test with password admin123.',
+          'auth/wrong-password': 'Incorrect password.',
+          'auth/invalid-email': 'Invalid email or username.',
+          'auth/network-request-failed': 'Network error. Check connection.',
+          'auth/too-many-requests': 'Too many attempts. Try again later.'
+        };
+        showError(map[code] || (err?.message || 'Login failed'));
       }
     });
   </script>
 </body>
 </html>
 
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Allow reads to authenticated users (optional)
-    match /{document=**} {
-      allow read: if request.auth != null;
-    }
-
-    // Require admin custom claim for writes/deletes across collections used by the app
-    match /{collection}/{doc} {
-      allow write, delete: if request.auth != null && request.auth.token.admin == true;
-    }
-  }
-}

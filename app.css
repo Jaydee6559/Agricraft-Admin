@@ -14,7 +14,7 @@
 body{background:var(--bg);color:var(--text);min-height:100vh}
 .app{display:flex;gap:28px;align-items:flex-start;padding:34px 48px}
 
-/* Sidebar */
+
 .sidebar{
   width:56px;
   background:transparent;
@@ -33,7 +33,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
 .sidebar .icon{width:34px;height:34px;border-radius:8px;background:var(--sidebar-bg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px var(--shadow);cursor:pointer}
 .sidebar .brand{writing-mode:vertical-rl;transform:rotate(180deg);font-weight:700;font-size:.8rem;color:#222;margin-top:auto}
 
-/* Main content */
+
 .container{
   flex:1;
   min-width:760px;
@@ -59,13 +59,13 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
   box-shadow:0 4px 8px var(--shadow);
 }
 
-/* action card */
+
 .action-card{max-width:520px}
 .action-list{list-style:none;padding-left:12px}
 .action-list li{margin:8px 0;font-weight:600}
 .action-list li .count{color:#d43; margin-right:8px}
 
-/* page layout for content pages */
+
 .content-grid{display:flex;flex-direction:column;gap:18px}
 .controls{margin-top:12px;display:flex;gap:12px}
 .btn{
@@ -73,7 +73,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
 }
 .btn.ghost{background:transparent;border:2px solid var(--muted)}
 
-/* Table */
+
 .table{
   width:100%;
   margin-top:14px;
@@ -87,13 +87,12 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
 .status-ok{color:green;font-weight:700}
 .status-pending{color:#c33;font-weight:700}
 
-/* small tweaks */
+
 .kv{display:flex;align-items:center;gap:8px;font-weight:700}
 .stat-number{color:#2a9d2a;font-weight:800;margin-left:6px}
 .empty-box{height:150px;border-radius:10px;background:var(--panel);border:2px solid var(--muted);display:flex;align-items:center;justify-content:center;color:#988f80;font-weight:700}
 .footer-note{font-size:.86rem;color:#666;margin-top:10px}
 
-/* responsiveness */
 @media (max-width:980px){
   .app{padding:18px}
   .container{min-width:unset}

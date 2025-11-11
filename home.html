@@ -12,9 +12,10 @@
     <aside class="sidebar">
       <div class="hamb">≡</div>
       <div class="avatar" title="Admin"></div>
+      <a class="icon" href="home.html" title="Home">🏠</a>
       <a class="icon" href="users.html" title="Users">👥</a>
       <a class="icon" href="valid-id.html" title="Valid Ids">🪪</a>
-      <a class="icon" href="shop-validation.html" title="Shops">🏬</a>
+      <a class="icon" href="shop-user.html" title="Shops">🏬</a>
       <a class="icon" href="product-validation.html" title="Products">🛒</a>
       <div class="brand">AgriCraft Market</div>
     </aside>
@@ -38,7 +39,7 @@
           </ul>
           <div class="controls">
             <a class="btn" href="valid-id.html">Open Valid Ids</a>
-            <a class="btn" href="shop-validation.html">Shop Validation</a>
+            <a class="btn" href="shop-user.html">Shop Validation</a>
             <a class="btn" href="product-validation.html">Product Validation</a>
           </div>
         </div>
@@ -47,12 +48,16 @@
           <strong>Quick Actions</strong>
           <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap">
             <a class="btn" href="users.html">Users Dashboard</a>
+            <button id="clear-notes" class="btn ghost">Clear Notes</button>
           </div>
         </div>
 
         <div class="panel">
-          <strong>Recent System Notes</strong>
-          <div class="empty-box">No recent notes</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <strong>Recent System Notes</strong>
+            <button id="refresh-notes" class="btn ghost" style="padding:6px 12px;font-size:0.8rem">Refresh</button>
+          </div>
+          <div id="system-notes" class="empty-box">Loading system notes...</div>
           <div class="footer-note">System updates and user activity will appear here.</div>
         </div>
       </section>
@@ -62,6 +67,179 @@
   <script type="module" src="./protect.js"></script>
   <script type="module">
     import { getCounts } from './firebase.js';
+    import { 
+      collection, 
+      query, 
+      orderBy, 
+      limit, 
+      getDocs,
+      addDoc,
+      serverTimestamp 
+    } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+    import { db } from './firebaseConfig.js';
+
+    const systemNotesEl = document.getElementById('system-notes');
+    const refreshNotesBtn = document.getElementById('refresh-notes');
+    const clearNotesBtn = document.getElementById('clear-notes');
+
+ 
+    const noteTemplates = {
+      userRegistered: (data) => `👤 New user registered: ${data.fullName || data.email}`,
+      validIdSubmitted: (data) => ` Valid ID submitted by: ${data.fullName || 'User'}`,
+      validIdApproved: (data) => ` Valid ID approved for: ${data.fullName || 'User'}`,
+      shopSubmitted: (data) => ` Shop registration: ${data.shopName || 'New Shop'}`,
+      shopApproved: (data) => ` Shop approved: ${data.shopName || 'Shop'}`,
+      productSubmitted: (data) => ` Product submitted: ${data.productName || 'New Product'}`,
+      productApproved: (data) => ` Product approved: ${data.productName || 'Product'}`,
+      adminAction: (data) => ` Admin action: ${data.action || 'System update'}`
+    };
+
+    // Load system notes
+    async function loadSystemNotes() {
+      try {
+        systemNotesEl.innerHTML = '<div style="padding:20px;text-align:center">Loading notes...</div>';
+        
+        const notesRef = collection(db, 'systemNotes');
+        const q = query(notesRef, orderBy('timestamp', 'desc'), limit(10));
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+          
+          await createSampleNotes();
+          loadSystemNotes(); 
+          return;
+        }
+
+        const notes = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            timestamp: data.timestamp?.toDate?.() || new Date(data.timestamp)
+          };
+        });
+
+        displayNotes(notes);
+      } catch (error) {
+        console.error('Error loading system notes:', error);
+        systemNotesEl.innerHTML = '<div style="color:red;padding:20px;text-align:center">Error loading notes</div>';
+      }
+    }
+
+    // Display notes in the UI
+    function displayNotes(notes) {
+      if (notes.length === 0) {
+        systemNotesEl.innerHTML = '<div class="empty-box">No system notes yet</div>';
+        return;
+      }
+
+      const notesHTML = notes.map(note => `
+        <div style="padding:12px;border-bottom:1px solid #eee;display:flex;align-items:flex-start;gap:12px">
+          <div style="flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:12px">
+            ${getNoteIcon(note.type)}
+          </div>
+          <div style="flex:1">
+            <div style="font-weight:600;margin-bottom:4px">${note.message}</div>
+            <div style="font-size:0.8rem;color:#666">
+              ${formatTimestamp(note.timestamp)}
+              ${note.admin ? `by ${note.admin}` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      systemNotesEl.innerHTML = `
+        <div style="max-height:300px;overflow-y:auto;border-radius:8px;background:var(--panel);border:1px solid var(--muted)">
+          ${notesHTML}
+        </div>
+      `;
+    }
+
+    
+    function getNoteIcon(type) {
+      const icons = {
+        userRegistered: '',
+        validIdSubmitted: '',
+        validIdApproved: '',
+        shopSubmitted: '',
+        shopApproved: '',
+        productSubmitted: '',
+        productApproved: '',
+        adminAction: ''
+      };
+      return icons[type] || '📝';
+    }
+
+    // Format timestamp
+    function formatTimestamp(timestamp) {
+      if (!timestamp) return '';
+      const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+      return date.toLocaleDateString();
+    }
+
+    // Create sample notes if none exist
+    async function createSampleNotes() {
+      const sampleNotes = [
+        {
+          type: 'adminAction',
+          message: 'System initialized and ready',
+          timestamp: serverTimestamp(),
+          admin: 'System'
+        },
+        {
+          type: 'userRegistered',
+          message: 'First admin user created',
+          timestamp: serverTimestamp(),
+          admin: 'System'
+        }
+      ];
+
+      try {
+        for (const note of sampleNotes) {
+          await addDoc(collection(db, 'systemNotes'), note);
+        }
+      } catch (error) {
+        console.error('Error creating sample notes:', error);
+      }
+    }
+
+   
+    async function clearAllNotes() {
+      if (!confirm('Are you sure you want to clear all system notes?')) return;
+      
+      try {
+        const notesRef = collection(db, 'systemNotes');
+        const snapshot = await getDocs(notesRef);
+        const deletePromises = snapshot.docs.map(doc => 
+          deleteDoc(doc.ref)
+        );
+        await Promise.all(deletePromises);
+        
+        // Create a new note indicating the clear action
+        await addDoc(collection(db, 'systemNotes'), {
+          type: 'adminAction',
+          message: 'All system notes cleared by admin',
+          timestamp: serverTimestamp(),
+          admin: 'Admin'
+        });
+        
+        loadSystemNotes();
+      } catch (error) {
+        console.error('Error clearing notes:', error);
+        alert('Error clearing notes: ' + error.message);
+      }
+    }
+
 
     async function boot() {
       try {
@@ -74,7 +252,21 @@
         console.error(err);
       }
     }
+
+    refreshNotesBtn?.addEventListener('click', loadSystemNotes);
+    clearNotesBtn?.addEventListener('click', clearAllNotes);
+
+  
     boot();
+    loadSystemNotes();
+
+
+    window.addEventListener('agri:countsChanged', () => {
+      boot();
+    });
+
+  
+    import { deleteDoc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
   </script>
 </body>
 </html>

@@ -11,23 +11,36 @@
     <aside class="sidebar">
       <div class="hamb">≡</div>
       <div class="avatar"></div>
-      <a class="icon" href="users.html">👥</a>
+      <a class="icon" href="home.html" title="Home">🏠</a>
+      <a class="icon" href="users.html" title="Users">👥</a>
+      <a class="icon" href="valid-id.html" title="Valid Ids">🪪</a>
+      <a class="icon" href="shop-user.html" title="Shops">🏬</a>
+      <a class="icon" href="product-validation.html" title="Products">🛒</a>
       <div class="brand">AgriCraft Market</div>
     </aside>
 
     <main class="container">
       <div class="topbar">
-        <div><div class="title">Users Dashboard</div><div class="welcome">Total Users <span id="total-users" class="stat-number">0</span></div></div>
+        <div>
+          <div class="title">Users Dashboard</div>
+          <div class="welcome">Total Users <span id="total-users" class="stat-number">0</span></div>
+        </div>
         <div class="kv">AgriCraft Market</div>
       </div>
 
       <section class="panel">
         <table class="table">
           <thead>
-            <tr><th>Id</th><th>Full Name</th><th>Number</th><th>Email</th><th>Valid Id Status</th><th>Actions</th></tr>
+            <tr>
+              <th>Id</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
           </thead>
           <tbody id="users-tbody">
-            <!-- injected -->
+
           </tbody>
         </table>
 
