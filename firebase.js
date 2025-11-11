@@ -1,4 +1,4 @@
-// Initialize Firebase (browser modules) and export Firestore/Auth/Storage + small helpers.
+// Initialize Firebase (browser modules) and export auth + firestore helpers
 import { firebaseConfig } from './firebaseConfig.js';
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
@@ -14,9 +14,7 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
-console.log('Firebase initialized for AgriCraft Admin (projectId:', firebaseConfig.projectId, ')');
-
-/* -- Useful helper functions (import as needed) -- */
+/* Useful Firestore helpers used by the admin UI */
 export async function getCounts() {
   const counts = { validIds: 0, shops: 0, products: 0, users: 0 };
   try {
@@ -48,16 +46,6 @@ export async function getPendingDocs(collectionName) {
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch (err) {
     console.error('getPendingDocs error:', err);
-    return [];
-  }
-}
-
-export async function getAllDocs(collectionName) {
-  try {
-    const snap = await getDocs(collection(db, collectionName));
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch (err) {
-    console.error('getAllDocs error:', err);
     return [];
   }
 }

@@ -1,23 +1,21 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AgriCraft Market Admin - Login</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Kumbh+Sans:wght@700&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="index.css">
 </head>
 <body>
   <div class="login-container">
     <h1 class="title">AgriCraft Market Admin</h1>
 
-    <form class="login-form" action="#" method="get">
+    <form class="login-form" action="#" method="post">
       <p class="subtitle">Login to your Account</p>
 
       <div class="input-group">
-        <input type="text" id="email" placeholder="Username (email)" required />
+        <input type="email" id="email" placeholder="Username (email)" required />
       </div>
 
       <div class="input-group">
@@ -27,7 +25,6 @@
       <button type="submit" class="login-btn">Login</button>
 
       <div id="error" role="alert" style="display:none;color:#c33;margin-top:10px;font-weight:700"></div>
-      
     </form>
   </div>
 
@@ -35,20 +32,17 @@
     import { signIn } from './auth.js';
 
     const form = document.querySelector('.login-form');
-    const userInput = document.getElementById('email');
-    const passInput = document.getElementById('password');
+    const emailEl = document.getElementById('email');
+    const passEl = document.getElementById('password');
     const errorEl = document.getElementById('error');
 
-    form.addEventListener('submit', async function(e){
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorEl.style.display = 'none';
-      const email = (userInput.value || '').trim();
-      const password = passInput.value || '';
-
       try {
-        await signIn(email, password);
-        // on success the auth state listener in protected pages will allow access;
-        // redirect to home.html
+        await signIn(emailEl.value.trim(), passEl.value);
+        // successful sign in will be validated on protected pages,
+        // redirect to home which is protected by protect.js
         window.location.href = 'home.html';
       } catch (err) {
         console.error(err);
@@ -58,7 +52,6 @@
       }
     });
   </script>
-  <script type="module" src="./protect.js"></script>
 </body>
 </html>
 

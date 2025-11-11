@@ -1,7 +1,6 @@
-// Import this in every admin page (home/users/valid-id/shop-validation/product-validation)
+// Place <script type="module" src="./protect.js"></script> near the end of every protected page.
 import { onAuthChanged, currentUserIsAdmin, signOutUser } from './auth.js';
 
-// Redirect non-authenticated or non-admin users to login
 onAuthChanged(async (user) => {
   if (!user) {
     window.location.href = 'index.html';
@@ -10,14 +9,13 @@ onAuthChanged(async (user) => {
 
   const isAdmin = await currentUserIsAdmin(user);
   if (!isAdmin) {
-    // optional: show brief message then redirect
-    alert('Not authorized. Signing out.');
+    alert('You are not authorized to access the admin panel.');
     await signOutUser();
     window.location.href = 'index.html';
     return;
   }
 
-  // inject sign out button into .topbar if present
+  // inject sign-out button into topbar if present
   const topbar = document.querySelector('.topbar');
   if (topbar && !document.getElementById('signout-btn')) {
     const btn = document.createElement('button');
