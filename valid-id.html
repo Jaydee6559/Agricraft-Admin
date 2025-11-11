@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Valid Id Verification - AgriCraft Admin</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="hamb">≡</div>
+      <div class="avatar"></div>
+      <div class="brand">AgriCraft Market</div>
+    </aside>
+
+    <main class="container">
+      <div class="topbar">
+        <div><div class="title">Valid Id Verification</div><div class="welcome">Pending <span id="pending-valid" class="stat-number">0</span></div></div>
+        <div class="kv">AgriCraft Market</div>
+      </div>
+
+      <section class="panel">
+        <table class="table">
+          <thead><tr><th>user_id</th><th>Full Name</th><th>Valid Id</th><th>Valid Id Status</th><th>Actions</th></tr></thead>
+          <tbody id="valid-tbody">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+
+        <div style="display:flex;justify-content:center;margin-top:16px">
+          <button id="refresh-valid" class="btn">Refresh</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import { getPendingDocs, approveDoc, deleteDocById } from './firebase.js';
+
+    const tbody = document.getElementById('valid-tbody');
+    const pendingEl = document.getElementById('pending-valid');
+    const refreshBtn = document.getElementById('refresh-valid');
+
+    function rowTemplate(item) {
+      return `
+        <tr data-id="${item.id}">
+          <td>${item.userId ?? item.id}</td>
+          <td>${item.fullName ?? item.name ?? '-'}</td>
+          <td>${item.validIdFile ?? item.validId ?? '-'}</td>
+          <td class="status-pending">${item.status}</td>
+          <td>
+            <button class="btn verify">Verify</button>
+            <button class="btn ghost delete">Delete</button>
+          </td>
+        </tr>`;
+    }
+
+    async function load() {
+      tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
+      const list = await getPendingDocs('validIds');
+      pendingEl.textContent = list.length;
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="5">No pending valid ids</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(rowTemplate).join('');
+      attachHandlers();
+    }
+
+    function attachHandlers() {
+      tbody.querySelectorAll('button.verify').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const tr = e.target.closest('tr');
+          const id = tr.dataset.id;
+          e.target.disabled = true;
+          const ok = await approveDoc('validIds', id, 'verified');
+          if (ok) tr.remove();
+        });
+      });
+
+      tbody.querySelectorAll('button.delete').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const tr = e.target.closest('tr');
+          const id = tr.dataset.id;
+          if (!confirm('Delete this valid id record?')) return;
+          e.target.disabled = true;
+          const ok = await deleteDocById('validIds', id);
+          if (ok) tr.remove();
+        });
+      });
+    }
+
+    refreshBtn.addEventListener('click', load);
+    load();
+  </script>
+</body>
+</html>

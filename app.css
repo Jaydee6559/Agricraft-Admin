@@ -1,0 +1,101 @@
+:root{
+  --bg:#F4F8FF;
+  --panel:#FBF6EF;
+  --muted:#d8d6cf;
+  --accent:#FFEB91;
+  --accent-2:#FFE25E;
+  --text:#111;
+  --shadow: rgba(0,0,0,0.12);
+  --radius:12px;
+  --sidebar-bg:#F2EEDD;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Inter",sans-serif}
+body{background:var(--bg);color:var(--text);min-height:100vh}
+.app{display:flex;gap:28px;align-items:flex-start;padding:34px 48px}
+
+/* Sidebar */
+.sidebar{
+  width:56px;
+  background:transparent;
+  border-radius:12px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+  padding:12px 8px;
+  position:relative;
+}
+.sidebar .hamb{
+  width:34px;height:34px;border-radius:6px;background:var(--sidebar-bg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px var(--shadow);cursor:pointer
+}
+.sidebar .avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#cde,#eef);box-shadow:0 2px 4px var(--shadow)}
+.sidebar .icon{width:34px;height:34px;border-radius:8px;background:var(--sidebar-bg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px var(--shadow);cursor:pointer}
+.sidebar .brand{writing-mode:vertical-rl;transform:rotate(180deg);font-weight:700;font-size:.8rem;color:#222;margin-top:auto}
+
+/* Main content */
+.container{
+  flex:1;
+  min-width:760px;
+  background:transparent;
+}
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin-bottom:22px;
+}
+.title{
+  font-weight:700;font-size:1.25rem;
+}
+.welcome{
+  font-size:1.05rem;margin-bottom:12px
+}
+.panel{
+  background:var(--panel);
+  border-radius:10px;
+  border:2px solid var(--muted);
+  padding:18px;
+  box-shadow:0 4px 8px var(--shadow);
+}
+
+/* action card */
+.action-card{max-width:520px}
+.action-list{list-style:none;padding-left:12px}
+.action-list li{margin:8px 0;font-weight:600}
+.action-list li .count{color:#d43; margin-right:8px}
+
+/* page layout for content pages */
+.content-grid{display:flex;flex-direction:column;gap:18px}
+.controls{margin-top:12px;display:flex;gap:12px}
+.btn{
+  background:var(--accent);border:2px solid #E0D276;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 4px 6px var(--shadow)
+}
+.btn.ghost{background:transparent;border:2px solid var(--muted)}
+
+/* Table */
+.table{
+  width:100%;
+  margin-top:14px;
+  border-collapse:collapse;
+  font-size:.95rem;
+}
+.table thead th{
+  text-align:left;padding:12px 14px;font-weight:700;color:#222;border-bottom:1px solid rgba(0,0,0,0.06)
+}
+.table tbody td{padding:14px;background:transparent;border-bottom:1px dashed rgba(0,0,0,0.04);font-weight:600}
+.status-ok{color:green;font-weight:700}
+.status-pending{color:#c33;font-weight:700}
+
+/* small tweaks */
+.kv{display:flex;align-items:center;gap:8px;font-weight:700}
+.stat-number{color:#2a9d2a;font-weight:800;margin-left:6px}
+.empty-box{height:150px;border-radius:10px;background:var(--panel);border:2px solid var(--muted);display:flex;align-items:center;justify-content:center;color:#988f80;font-weight:700}
+.footer-note{font-size:.86rem;color:#666;margin-top:10px}
+
+/* responsiveness */
+@media (max-width:980px){
+  .app{padding:18px}
+  .container{min-width:unset}
+  .sidebar{display:flex}
+}

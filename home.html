@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AgriCraft Market Admin - Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Kumbh+Sans:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="hamb">≡</div>
+      <div class="avatar" title="Admin"></div>
+      <a class="icon" href="users.html" title="Users">👥</a>
+      <a class="icon" href="valid-id.html" title="Valid Ids">🪪</a>
+      <a class="icon" href="shop-validation.html" title="Shops">🏬</a>
+      <a class="icon" href="product-validation.html" title="Products">🛒</a>
+      <div class="brand">AgriCraft Market</div>
+    </aside>
+
+    <main class="container">
+      <div class="topbar">
+        <div>
+          <div class="title">Welcome Back Admin</div>
+          <div class="welcome">Overview of actions needing attention</div>
+        </div>
+        <div class="kv">AgriCraft Market <span id="user-count" class="stat-number">· --</span></div>
+      </div>
+
+      <section class="content-grid">
+        <div class="panel action-card">
+          <strong>Actions Needed:</strong>
+          <ul class="action-list">
+            <li><span id="valid-count" class="count">0</span> Pending Valid Id Verification</li>
+            <li><span id="shop-count" class="count">0</span> Pending Shop Validation</li>
+            <li><span id="product-count" class="count">0</span> Pending Product Validation</li>
+          </ul>
+          <div class="controls">
+            <a class="btn" href="valid-id.html">Open Valid Ids</a>
+            <a class="btn" href="shop-validation.html">Shop Validation</a>
+            <a class="btn" href="product-validation.html">Product Validation</a>
+          </div>
+        </div>
+
+        <div class="panel">
+          <strong>Quick Actions</strong>
+          <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap">
+            <a class="btn" href="users.html">Users Dashboard</a>
+          </div>
+        </div>
+
+        <div class="panel">
+          <strong>Recent System Notes</strong>
+          <div class="empty-box">No recent notes</div>
+          <div class="footer-note">System updates and user activity will appear here.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import { getCounts } from './firebase.js';
+
+    async function boot() {
+      try {
+        const counts = await getCounts();
+        document.getElementById('valid-count').textContent = counts.validIds;
+        document.getElementById('shop-count').textContent = counts.shops;
+        document.getElementById('product-count').textContent = counts.products;
+        document.getElementById('user-count').textContent = '· ' + counts.users;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    boot();
+  </script>
+</body>
+</html>

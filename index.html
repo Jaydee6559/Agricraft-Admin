@@ -13,11 +13,11 @@
   <div class="login-container">
     <h1 class="title">AgriCraft Market Admin</h1>
 
-    <form class="login-form" action="home.html" method="get">
+    <form class="login-form" action="#" method="get">
       <p class="subtitle">Login to your Account</p>
 
       <div class="input-group">
-        <input type="email" id="email" placeholder="Email" required />
+        <input type="text" id="email" placeholder="Username (email)" required />
       </div>
 
       <div class="input-group">
@@ -25,8 +25,54 @@
       </div>
 
       <button type="submit" class="login-btn">Login</button>
+
+      <div id="error" role="alert" style="display:none;color:#c33;margin-top:10px;font-weight:700"></div>
       
     </form>
   </div>
+
+  <script type="module">
+    import { signIn } from './auth.js';
+
+    const form = document.querySelector('.login-form');
+    const userInput = document.getElementById('email');
+    const passInput = document.getElementById('password');
+    const errorEl = document.getElementById('error');
+
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      errorEl.style.display = 'none';
+      const email = (userInput.value || '').trim();
+      const password = passInput.value || '';
+
+      try {
+        await signIn(email, password);
+        // on success the auth state listener in protected pages will allow access;
+        // redirect to home.html
+        window.location.href = 'home.html';
+      } catch (err) {
+        console.error(err);
+        errorEl.textContent = 'Sign in failed. Check credentials.';
+        errorEl.style.display = 'block';
+        setTimeout(() => { errorEl.style.display = 'none'; }, 4000);
+      }
+    });
+  </script>
+  <script type="module" src="./protect.js"></script>
 </body>
 </html>
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow reads to authenticated users (optional)
+    match /{document=**} {
+      allow read: if request.auth != null;
+    }
+
+    // Require admin custom claim for writes/deletes across collections used by the app
+    match /{collection}/{doc} {
+      allow write, delete: if request.auth != null && request.auth.token.admin == true;
+    }
+  }
+}

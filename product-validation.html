@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Product Validation - AgriCraft Admin</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="hamb">≡</div>
+      <div class="avatar"></div>
+      <div class="brand">AgriCraft Market</div>
+    </aside>
+
+    <main class="container">
+      <div class="topbar">
+        <div><div class="title">Product Validation</div><div class="welcome">Pending <span id="pending-products" class="stat-number">0</span></div></div>
+        <div class="kv">AgriCraft Market</div>
+      </div>
+
+      <section class="panel">
+        <table class="table">
+          <thead><tr><th>Product_id</th><th>Seller</th><th>Product</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="products-tbody"></tbody>
+        </table>
+
+        <div style="display:flex;justify-content:center;margin-top:16px;gap:12px">
+          <button id="refresh-products" class="btn">Refresh</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import { getPendingDocs, approveDoc, deleteDocById } from './firebase.js';
+    const tbody = document.getElementById('products-tbody');
+    const pendingEl = document.getElementById('pending-products');
+    const refreshBtn = document.getElementById('refresh-products');
+
+    function r(item) {
+      return `<tr data-id="${item.id}">
+        <td>${item.id}</td>
+        <td>${item.sellerName ?? item.fullName ?? '-'}</td>
+        <td>${item.productName ?? item.product ?? '-'}</td>
+        <td>${item.description ?? '-'}</td>
+        <td class="status-pending">${item.status}</td>
+        <td>
+          <button class="btn validate">Validate</button>
+          <button class="btn ghost delete">Delete</button>
+        </td>
+      </tr>`;
+    }
+
+    async function load() {
+      tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
+      const list = await getPendingDocs('products');
+      pendingEl.textContent = list.length;
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="6">No pending products</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(r).join('');
+      attach();
+    }
+
+    function attach() {
+      tbody.querySelectorAll('button.validate').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const tr = e.target.closest('tr'); const id = tr.dataset.id;
+          e.target.disabled = true;
+          const ok = await approveDoc('products', id, 'approved');
+          if (ok) tr.remove();
+        });
+      });
+      tbody.querySelectorAll('button.delete').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const tr = e.target.closest('tr'); const id = tr.dataset.id;
+          if (!confirm('Delete this product record?')) return;
+          e.target.disabled = true;
+          const ok = await deleteDocById('products', id);
+          if (ok) tr.remove();
+        });
+      });
+    }
+
+    refreshBtn.addEventListener('click', load);
+    load();
+  </script>
+</body>
+</html>
