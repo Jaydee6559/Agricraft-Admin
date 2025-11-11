@@ -38,49 +38,7 @@
     </main>
   </div>
 
-  <script type="module">
-    import { getAllDocs, deleteDocById } from './firebase.js';
-    const tbody = document.getElementById('users-tbody');
-    const totalEl = document.getElementById('total-users');
-    const refreshBtn = document.getElementById('refresh-users');
-
-    function row(u) {
-      return `<tr data-id="${u.id}">
-        <td>${u.id}</td>
-        <td>${u.fullName ?? u.name ?? '-'}</td>
-        <td>${u.phone ?? u.number ?? '-'}</td>
-        <td>${u.email ?? '-'}</td>
-        <td class="${u.status === 'verified' ? 'status-ok' : 'status-pending'}">${u.status ?? '-'}</td>
-        <td><button class="btn ghost delete">Delete</button></td>
-      </tr>`;
-    }
-
-    async function load() {
-      tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
-      const list = await getAllDocs('users');
-      totalEl.textContent = list.length;
-      if (!list.length) {
-        tbody.innerHTML = '<tr><td colspan="6">No users</td></tr>';
-        return;
-      }
-      tbody.innerHTML = list.map(row).join('');
-      attach();
-    }
-
-    function attach() {
-      tbody.querySelectorAll('button.delete').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          const tr = e.target.closest('tr'); const id = tr.dataset.id;
-          if (!confirm('Delete this user?')) return;
-          e.target.disabled = true;
-          const ok = await deleteDocById('users', id);
-          if (ok) tr.remove();
-        });
-      });
-    }
-
-    refreshBtn.addEventListener('click', load);
-    load();
-  </script>
+  <script type="module" src="./protect.js"></script>
+  <script type="module" src="./users-fetch.js"></script>
 </body>
 </html>
