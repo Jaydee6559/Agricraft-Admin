@@ -8,7 +8,6 @@ function userRow(u) {
   
   const userName = u.name || u.displayName || u.lastName + " " + u.firstName || '-';
   const userEmail = u.email || '-';
-  const userStatus = u.status || u.verified ? 'verified' : 'pending';
   
   return `<tr data-id="${u.id}">
     <td>${u.id}</td>
