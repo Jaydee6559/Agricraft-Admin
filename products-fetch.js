@@ -6,7 +6,8 @@ import {
   updateDoc, 
   doc, 
   deleteDoc,
-  getDoc 
+  addDoc,
+  serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { db } from './firebaseConfig.js';
 
@@ -74,13 +75,21 @@ async function getPendingProducts() {
 /**
  * Approve a product in subcollection
  */
-async function approveProductById(shopId, productId) {
+async function approveProductById(shopId, productId, productData) {
   try {
     const productRef = doc(db, 'shops', shopId, 'products', productId);
     await updateDoc(productRef, {
       productStatus: 'approved',
       approvedAt: new Date().toISOString()
     });
+    
+   
+    await addSystemNote('productApproved', {
+      productName: productData.productName || productData.name || 'Unknown Product',
+      shopName: productData.shopName || 'Unknown Shop',
+      admin: 'Admin'
+    });
+    
     notifyCountsChanged();
     return true;
   } catch (err) {
@@ -89,13 +98,18 @@ async function approveProductById(shopId, productId) {
   }
 }
 
-/**
- * Delete a product from subcollection
- */
-async function deleteProductById(shopId, productId) {
+
+async function deleteProductById(shopId, productId, productData) {
   try {
     const productRef = doc(db, 'shops', shopId, 'products', productId);
     await deleteDoc(productRef);
+    
+    // Add system note
+    await addSystemNote('adminAction', {
+      action: `Product deleted: ${productData.productName || productData.name || 'Unknown Product'}`,
+      admin: 'Admin'
+    });
+    
     notifyCountsChanged();
     return true;
   } catch (err) {
@@ -152,7 +166,7 @@ async function loadProducts() {
 function attachHandlers() {
   if (!tbody) return;
   
-  // Approve buttons
+ 
   tbody.querySelectorAll('button.approve').forEach(btn => {
     btn.onclick = async (e) => {
       const tr = e.target.closest('tr');
@@ -164,11 +178,18 @@ function attachHandlers() {
         return;
       }
       
+     
+      const productName = tr.cells[2].textContent;
+      const shopName = tr.cells[1].textContent;
+      
       e.target.disabled = true;
       e.target.textContent = 'Approving...';
       
       try {
-        const ok = await approveProductById(shopId, productId);
+        const ok = await approveProductById(shopId, productId, {
+          productName: productName,
+          shopName: shopName
+        });
         if (ok) {
           tr.remove();
       
@@ -191,7 +212,7 @@ function attachHandlers() {
     };
   });
 
-  // Delete buttons
+
   tbody.querySelectorAll('button.delete').forEach(btn => {
     btn.onclick = async (e) => {
       const tr = e.target.closest('tr');
@@ -200,14 +221,21 @@ function attachHandlers() {
       
       if (!confirm('Are you sure you want to delete this product?')) return;
       
+    
+      const productName = tr.cells[2].textContent;
+      const shopName = tr.cells[1].textContent;
+      
       e.target.disabled = true;
       e.target.textContent = 'Deleting...';
       
       try {
-        const ok = await deleteProductById(shopId, productId);
+        const ok = await deleteProductById(shopId, productId, {
+          productName: productName,
+          shopName: shopName
+        });
         if (ok) {
           tr.remove();
-          // Update pending count
+         
           if (pendingEl) {
             const remaining = tbody.querySelectorAll('tr[data-id]').length;
             pendingEl.textContent = remaining;
@@ -238,26 +266,18 @@ if (refreshBtn) {
   console.warn('Refresh button not found');
 }
 
-// Initial load when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', loadProducts);
-} else {
-  loadProducts();
-}
-
+// System notes function - FIXED VERSION
 export async function addSystemNote(type, data = {}) {
   try {
-    const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js');
-    
     const noteTemplates = { 
-      userRegistered: (data) => ` New user registered: ${data.fullName || data.email}`,
-      validIdSubmitted: (data) => ` Valid ID submitted by: ${data.fullName || 'User'}`,
-      validIdApproved: (data) => ` Valid ID approved for: ${data.fullName || 'User'}`,
-      shopSubmitted: (data) => ` Shop registration: ${data.shopName || 'New Shop'}`,
-      shopApproved: (data) => ` Shop approved: ${data.shopName || 'Shop'}`,
+      userRegistered: (data) => `👤 New user registered: ${data.fullName || data.email}`,
+      validIdSubmitted: (data) => `🪪 Valid ID submitted by: ${data.fullName || 'User'}`,
+      validIdApproved: (data) => `✅ Valid ID approved for: ${data.fullName || 'User'}`,
+      shopSubmitted: (data) => `🏬 Shop registration: ${data.shopName || 'New Shop'}`,
+      shopApproved: (data) => `✅ Shop approved: ${data.shopName || 'Shop'}`,
       productSubmitted: (data) => `🛒 Product submitted: ${data.productName || 'New Product'}`,
-      productApproved: (data) => ` Product approved: ${data.productName || 'Product'}`,
-      adminAction: (data) => ` Admin action: ${data.action || 'System update'}`
+      productApproved: (data) => `✅ Product approved: ${data.productName || 'Product'}`,
+      adminAction: (data) => `⚙️ Admin action: ${data.action || 'System update'}`
     };
 
     const message = noteTemplates[type] ? noteTemplates[type](data) : `📝 ${data.message || 'System activity'}`;
@@ -275,4 +295,11 @@ export async function addSystemNote(type, data = {}) {
     console.error('addSystemNote error:', err);
     return false;
   }
+}
+
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadProducts);
+} else {
+  loadProducts();
 }

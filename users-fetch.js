@@ -14,7 +14,6 @@ function userRow(u) {
     <td>${u.id}</td>
     <td>${userName}</td>
     <td>${userEmail}</td>
-    <td class="${userStatus === 'verified' ? 'status-ok' : 'status-pending'}">${userStatus}</td>
     <td><button class="btn ghost delete">Delete</button></td>
   </tr>`;
 }
