@@ -83,92 +83,10 @@
     const clearNotesBtn = document.getElementById('clear-notes');
 
  
-    const noteTemplates = {
-      userRegistered: (data) => ` New user registered: ${data.fullName || data.email}`,
-      validIdSubmitted: (data) => ` Valid ID submitted by: ${data.fullName || 'User'}`,
-      validIdApproved: (data) => ` Valid ID approved for: ${data.fullName || 'User'}`,
-      shopSubmitted: (data) => ` Shop registration: ${data.shopName || 'New Shop'}`,
-      shopApproved: (data) => ` Shop approved: ${data.shopName || 'Shop'}`,
-      productSubmitted: (data) => ` Product submitted: ${data.productName || 'New Product'}`,
-      productApproved: (data) => ` Product approved: ${data.productName || 'Product'}`,
-      adminAction: (data) => ` Admin action: ${data.action || 'System update'}`
-    };
-
-    // Load system notes
-    async function loadSystemNotes() {
-      try {
-        systemNotesEl.innerHTML = '<div style="padding:20px;text-align:center">Loading notes...</div>';
-        
-        const notesRef = collection(db, 'systemNotes');
-        const q = query(notesRef, orderBy('timestamp', 'desc'), limit(10));
-        const snapshot = await getDocs(q);
-        
-        if (snapshot.empty) {
-          
-          await createSampleNotes();
-          loadSystemNotes(); 
-          return;
-        }
-
-        const notes = snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            ...data,
-            timestamp: data.timestamp?.toDate?.() || new Date(data.timestamp)
-          };
-        });
-
-        displayNotes(notes);
-      } catch (error) {
-        console.error('Error loading system notes:', error);
-        systemNotesEl.innerHTML = '<div style="color:red;padding:20px;text-align:center">Error loading notes</div>';
-      }
-    }
-
-    // Display notes in the UI
-    function displayNotes(notes) {
-      if (notes.length === 0) {
-        systemNotesEl.innerHTML = '<div class="empty-box">No system notes yet</div>';
-        return;
-      }
-
-      const notesHTML = notes.map(note => `
-        <div style="padding:12px;border-bottom:1px solid #eee;display:flex;align-items:flex-start;gap:12px">
-          <div style="flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:12px">
-            ${getNoteIcon(note.type)}
-          </div>
-          <div style="flex:1">
-            <div style="font-weight:600;margin-bottom:4px">${note.message}</div>
-            <div style="font-size:0.8rem;color:#666">
-              ${formatTimestamp(note.timestamp)}
-              ${note.admin ? `by ${note.admin}` : ''}
-            </div>
-          </div>
-        </div>
-      `).join('');
-
-      systemNotesEl.innerHTML = `
-        <div style="max-height:300px;overflow-y:auto;border-radius:8px;background:var(--panel);border:1px solid var(--muted)">
-          ${notesHTML}
-        </div>
-      `;
-    }
-
+  
     
-    function getNoteIcon(type) {
-      const icons = {
-        userRegistered: '',
-        validIdSubmitted: '',
-        validIdApproved: '',
-        shopSubmitted: '',
-        shopApproved: '',
-        productSubmitted: '',
-        productApproved: '',
-        adminAction: ''
-      };
-      return icons[type] || '📝';
-    }
+    
+    
 
     // Format timestamp
     function formatTimestamp(timestamp) {
@@ -180,7 +98,7 @@
       const diffHours = Math.floor(diffMs / 3600000);
       const diffDays = Math.floor(diffMs / 86400000);
 
-      if (diffMins < 1) return 'Just now';
+     if (diffMins < 1) return 'Just now';
       if (diffMins < 60) return `${diffMins}m ago`;
       if (diffHours < 24) return `${diffHours}h ago`;
       if (diffDays < 7) return `${diffDays}d ago`;
@@ -233,7 +151,7 @@
           admin: 'Admin'
         });
         
-        loadSystemNotes();
+        
       } catch (error) {
         console.error('Error clearing notes:', error);
         alert('Error clearing notes: ' + error.message);
@@ -258,7 +176,7 @@
 
   
     boot();
-    loadSystemNotes();
+  
 
 
     window.addEventListener('agri:countsChanged', () => {
